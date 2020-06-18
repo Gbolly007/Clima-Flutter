@@ -1,0 +1,12 @@
+{
+  "dt": 1485799200,
+  "main": "$main",
+  "weather": [
+    "$weather"
+  ],
+  "clouds": "$clouds",
+  "wind": "$wind",
+  "rain": "$rain",
+  "sys":"$sys",
+  "dt_txt": "2017-01-30 18:00:00"
+}

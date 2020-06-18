@@ -1,0 +1,44 @@
+name: clima
+description: A new Flutter application.
+
+version: 1.0.0+1
+
+environment:
+  sdk: ">=2.1.0 <3.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  cupertino_icons: ^0.1.2
+  geolocator: ^5.2.1
+  http: ^0.12.0+4
+  flutter_spinkit: ^4.1.1+1
+  font_awesome_flutter: ^8.6.0
+  intl: 0.15.7
+  easy_dialog: ^1.0.5
+  nice_button: ^0.1.7
+  flushbar: ^1.9.1
+  json_annotation:
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  json_model:
+  build_runner: ^1.0.0
+  json_serializable: ^2.0.0
+
+flutter:
+  uses-material-design: true
+
+  assets:
+  - images/
+
+  fonts:
+  - family: Spartan MB
+    fonts:
+    - asset: fonts/SpartanMB-Black.otf
+      weight: 900
+  - family: Quicksand
+    fonts:
+    - asset: fonts/Quicksand.ttf
