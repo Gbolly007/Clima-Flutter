@@ -1,6 +1,7 @@
-Weather forecast app desinged using flutter with the use of API from openweathers, supports light and dark mode.
+Weather forecast app desinged using flutter with the use of API from openweathers, 
+supports light and dark mode.
 
-Run pub get
+Run flutter pub get
 
 <img src="https://i.imgur.com/8SseJU6.png" height="1000" width="1000"/> <img src="https://i.imgur.com/10ZCcx9.png" height="1000" width="1000"/> <br>
 
