@@ -19,7 +19,7 @@ const kConditionTextStyle = TextStyle(
   fontSize: 100.0,
 );
 
-const kGeneralColor = Colors.white70;
+const kGeneralColor = Color(0xFFDEEAF7);
 
 const kTextFieldInputDecoration = InputDecoration(
     filled: true,
@@ -34,3 +34,10 @@ const kTextFieldInputDecoration = InputDecoration(
       ),
       borderSide: BorderSide.none,
     ));
+
+var cardDec = BoxDecoration(
+    color: Colors.white,
+    border: Border.all(
+      color: Colors.white,
+    ),
+    borderRadius: BorderRadius.all(Radius.circular(10)));

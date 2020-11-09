@@ -13,13 +13,14 @@ dependencies:
   cupertino_icons: ^0.1.2
   geolocator: ^5.2.1
   http: ^0.12.0+4
-  flutter_spinkit: ^4.1.1+1
   font_awesome_flutter: ^8.6.0
   intl: 0.15.7
-  easy_dialog: ^1.0.5
-  nice_button: ^0.1.7
-  flushbar: ^1.9.1
+
+  flushbar: ^1.10.4
+  weather_icons: ^2.0.2
   json_annotation:
+  shared_preferences: ^0.5.12+2
+  provider: ^4.3.2+2
 
 dev_dependencies:
   flutter_test:

@@ -4,7 +4,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../services/location.dart';
 import 'package:clima/services/networking.dart';
-import 'package:flutter/material.dart';
+
 
 const apiKey = 'b0ed477afabe3883cd633f39b7e03577';
 const openWeatherMapURL = 'https://api.openweathermap.org/data/2.5/weather';
@@ -16,7 +16,6 @@ class WeatherModel {
     NetworkHelper networkHelper = NetworkHelper(
         '$openWeatherMapURL?q=$cityName&units=metric&appid=$apiKey');
     var weatherData = await networkHelper.getData();
-    print(weatherData);
     return weatherData;
   }
 
@@ -28,7 +27,6 @@ class WeatherModel {
         '$openWeatherMapURL?lat=${location.latitude}&lon=${location.longitude}&units=metric&appid=$apiKey');
 
     var weatherData = await networkHelper.getData();
-    print(weatherData);
     return weatherData;
   }
 
@@ -38,6 +36,7 @@ class WeatherModel {
       await location.getCurrentLocation();
       final response = await http.get(
           '$openWeatherMapURLForecastURL?lat=${location.latitude}&lon=${location.longitude}&units=metric&appid=$apiKey');
+
       if (200 == response.statusCode) {
         return parseWeatherForeCast(response.body);
       } else {
@@ -98,15 +97,38 @@ class WeatherModel {
     }
   }
 
-  String getMessage(int temp) {
-    if (temp > 25) {
-      return 'It\'s 🍦 time';
-    } else if (temp > 20) {
-      return 'Time for shorts and 👕';
-    } else if (temp < 10) {
-      return 'You\'ll need 🧣 and 🧤';
-    } else {
-      return 'Bring a 🧥 just in case';
+  String getMessage(int weatherId) {
+    String iconType = "";
+    if (weatherId >= 200 && weatherId <= 232) {
+      iconType = "wi-thunderstorm";
+    } else if (weatherId >= 300 && weatherId <= 321) {
+      iconType = "wi-showers";
+    } else if (weatherId >= 500 && weatherId <= 531) {
+      iconType = "wi-rain";
+    } else if (weatherId >= 600 && weatherId <= 622) {
+      iconType = "wi-snow";
+    } else if (weatherId == 701 || weatherId == 741) {
+      iconType = "wi-fog";
+    } else if (weatherId == 711) {
+      iconType = "wi-smoke";
+    } else if (weatherId == 721) {
+      iconType = "wi-day-haze";
+    } else if (weatherId == 731 || weatherId == 761) {
+      iconType = "wi-dust";
+    } else if (weatherId == 751) {
+      iconType = "wi-sandstorm";
+    } else if (weatherId == 762) {
+      iconType = "wi-volcano";
+    } else if (weatherId == 771) {
+      iconType = "wi-cloudy-gusts";
+    } else if (weatherId == 781) {
+      iconType = "wi-tornado";
+    } else if (weatherId == 800) {
+      iconType = "wi-day-sunny";
+    } else if (weatherId > 801 && weatherId <= 804) {
+      iconType = "wi-day-cloudy";
     }
+
+    return iconType;
   }
 }

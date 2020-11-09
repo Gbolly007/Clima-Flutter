@@ -1,19 +1,19 @@
-import 'dart:async';
+import 'package:clima/darkThemeProv.dart';
 import 'package:clima/models/index.dart';
-import 'package:easy_dialog/easy_dialog.dart';
+import 'package:clima/widgets/cardIcon.dart';
+import 'package:clima/widgets/cardStats.dart';
+import 'package:clima/widgets/cardTitle.dart';
+import 'package:clima/widgets/highLow.dart';
+import 'package:clima/widgets/searchField.dart';
 import 'package:clima/models/listWeatherForecast.dart';
-import 'package:clima/screens/loading_screen.dart';
 import 'package:clima/services/weather.dart';
 import 'package:flutter/material.dart';
 import 'package:clima/utilities/constants.dart';
 import 'package:flutter/rendering.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:intl/intl.dart';
-import 'package:flushbar/flushbar.dart';
-import 'package:nice_button/NiceButton.dart';
-
-import '../Services.dart';
-import 'city_screenforecast.dart';
+import 'package:provider/provider.dart';
+import 'package:weather_icons/weather_icons.dart';
 
 class CityScreen extends StatefulWidget {
   CityScreen({this.locationWeather, this.cityName});
@@ -24,6 +24,7 @@ class CityScreen extends StatefulWidget {
 }
 
 class _CityScreenState extends State<CityScreen> {
+  GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey();
   WeatherModel weatherModel = WeatherModel();
   String weatherIcon;
   String cityName;
@@ -37,10 +38,11 @@ class _CityScreenState extends State<CityScreen> {
   String humidity;
   String sunrise;
   String weatherCondition;
-  Timer _timer;
+
   String search;
   ListWeatherForecast listWeatherForecast;
   int temperatures;
+  final TextEditingController txt = TextEditingController();
 
   @override
   void initState() {
@@ -55,22 +57,23 @@ class _CityScreenState extends State<CityScreen> {
     });
   }
 
-  Widget list() {
+  Widget list(bool darkTheme) {
     return Container(
+      height: 150,
       child: ListView.builder(
-        primary: false,
         shrinkWrap: true,
+        scrollDirection: Axis.horizontal,
         itemCount: listWeatherForecast.listWeatherForecast == null
             ? 0
             : listWeatherForecast.listWeatherForecast.length,
         itemBuilder: (BuildContext context, int index) {
-          return row(index);
+          return row(index, darkTheme);
         },
       ),
     );
   }
 
-  Widget row(int index) {
+  Widget row(int index, bool darkTheme) {
     if (listWeatherForecast.listWeatherForecast[index].main.temp is double) {
       double temp = listWeatherForecast.listWeatherForecast[index].main.temp;
       temperatures = temp.toInt();
@@ -80,61 +83,85 @@ class _CityScreenState extends State<CityScreen> {
 
     var newDateTimeObj2 = new DateFormat("yyyy-MM-dd HH:mm:ss")
         .parse(listWeatherForecast.listWeatherForecast[index].dt_txt);
-    String formattedDate = DateFormat('dd EEEE HH:mm').format(newDateTimeObj2);
+    String formattedDate = DateFormat('EE HH:mm').format(newDateTimeObj2);
+    String iconType = weatherModel.getMessage(
+        listWeatherForecast.listWeatherForecast[index].weather[0]['id']);
+    String main =
+        listWeatherForecast.listWeatherForecast[index].weather[0]['main'];
 
     return Padding(
-        padding: EdgeInsets.all(0.0),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            Image.network(
-              'http://openweathermap.org/img/wn/${listWeatherForecast.listWeatherForecast[index].weather[0]['icon']}@2x.png',
-            ),
-            Padding(
-              padding: const EdgeInsets.only(top: 20.0, right: 20.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  Text(
-                    '$temperatures °C'.toString(),
-                    style: TextStyle(
-                        fontFamily: 'Quicksand',
-                        fontSize: 15.0,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black),
-                  ),
-                  Text(
-                    formattedDate,
-                    style: TextStyle(
-                        fontFamily: 'Quicksand',
-                        fontSize: 15.0,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black),
-                  ),
-                  Text(
-                    '${listWeatherForecast.listWeatherForecast[index].weather[0]['description']}'
-                        .toUpperCase(),
-                    style: TextStyle(
-                        fontFamily: 'Quicksand',
-                        fontSize: 15.0,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black),
-                  )
-                ],
+      padding: const EdgeInsets.only(right: 20.0, left: 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: <Widget>[
+          Text(
+            formattedDate,
+            style: TextStyle(
+                fontFamily: 'Quicksand',
+                fontSize: 15.0,
+                fontWeight: FontWeight.bold,
+                color: darkTheme ? Colors.white : Colors.black),
+          ),
+          SizedBox(
+            height: 5,
+          ),
+          Padding(
+            padding: const EdgeInsets.only(left: 8.0),
+            child: IconButton(
+              icon: Icon(
+                WeatherIcons.fromString(
+                  iconType,
+                  fallback: WeatherIcons.na,
+                ),
+                size: 25,
+                color: Colors.white,
               ),
-            )
-          ],
-        ));
+            ),
+          ),
+          SizedBox(
+            height: 5,
+          ),
+          Padding(
+            padding: const EdgeInsets.only(left: 12.0),
+            child: Text(
+              '$temperatures °C'.toString(),
+              style: TextStyle(
+                  fontFamily: 'Quicksand',
+                  fontSize: 15.0,
+                  fontWeight: FontWeight.bold,
+                  color: darkTheme ? Colors.white : Colors.black),
+            ),
+          ),
+          SizedBox(
+            height: 5,
+          ),
+          Padding(
+            padding: const EdgeInsets.only(left: 12.0),
+            child: Text(
+              '$main',
+              style: TextStyle(
+                  fontFamily: 'Quicksand',
+                  fontSize: 15.0,
+                  fontWeight: FontWeight.bold,
+                  color: darkTheme ? Colors.white : Colors.black),
+            ),
+          )
+        ],
+      ),
+    );
   }
 
   void updateUI(dynamic weatherData) {
     setState(() {
       if (weatherData == null) {
         temperature = 0;
-        weatherIcon = 'Error';
-        message = 'Unable to get weather data';
-        cityName = '';
+        wind = "N/A";
+        cityName = 'N/A';
+        humidity = "N/A";
+        temperatureHigh = "N/A";
+        temperatureLow = "N/A";
+        weatherCondition = "N/A";
+        weatherIcon = "N/A";
         return;
       }
       var condition = weatherData['weather'][0]['id'];
@@ -177,23 +204,16 @@ class _CityScreenState extends State<CityScreen> {
       sunrise = DateFormat('kk:mm').format(DateTime.fromMillisecondsSinceEpoch(
           weatherData['sys']['sunrise'] * 1000));
       imageId = weatherData['weather'][0]['icon'];
-      weatherIcon = weatherModel.getWeatherIcon(condition);
-      message = weatherModel.getMessage(temperature);
-    });
-  }
 
-  _NewLocationScreenState() {
-    _timer = new Timer(const Duration(seconds: 120), () {
-      Navigator.push(context, MaterialPageRoute(builder: (context) {
-        return LoadingScreen();
-      }));
+      message = weatherModel.getMessage(temperature);
+      weatherIcon = weatherModel.getMessage(condition);
     });
   }
 
   @override
   void dispose() {
     super.dispose();
-    _timer.cancel();
+    txt.dispose();
   }
 
   @override
@@ -201,115 +221,93 @@ class _CityScreenState extends State<CityScreen> {
     var screenHeight = MediaQuery.of(context).size.height;
     var screenWidth = MediaQuery.of(context).size.width;
 
-    DateTime now = DateTime.now();
-    String formattedDate = DateFormat('EEEE kk:mm').format(now);
+    final themeChange = Provider.of<DarkThemeProvider>(context);
     return Scaffold(
+      key: _scaffoldKey,
+      floatingActionButton: FloatingActionButton(
+        child: Icon(
+          Icons.lightbulb_outline,
+          color: Colors.white,
+        ),
+        onPressed: () {
+          bool theme = themeChange.darkTheme;
+          themeChange.darkTheme = !theme;
+        },
+      ),
       body: Container(
         height: screenHeight,
         width: screenWidth,
-        color: kGeneralColor,
+        color: themeChange.darkTheme ? Colors.black87 : kGeneralColor,
         child: SafeArea(
           child: SingleChildScrollView(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
-                Align(
-                  alignment: Alignment.topRight,
-                  child: FlatButton(
-                    onPressed: () {
-                      EasyDialog(
-                          cornerRadius: 15.0,
-                          fogOpacity: 0.1,
-                          width: 280,
-                          height: 180,
-                          contentPadding: EdgeInsets.only(
-                              top: 12.0), // Needed for the button design
-                          contentList: [
-                            Expanded(
-                              flex: 1,
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.start,
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: <Widget>[
-                                  Padding(padding: EdgeInsets.only(left: 30.0)),
-                                  Text(
-                                    "Enter Location Name",
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.black,
-                                    ),
-                                    textScaleFactor: 1.3,
-                                  ),
-                                  Padding(padding: EdgeInsets.only(left: 10.0)),
-                                ],
-                              ),
-                            ),
-                            Expanded(
-                                flex: 3,
-                                child: Padding(
-                                  padding: EdgeInsets.all(10.0),
-                                  child: TextFormField(
-                                    onChanged: (value) {
-                                      search = value;
-                                    },
-                                    style: TextStyle(color: Colors.black),
-                                    maxLines: 5,
-                                    decoration: InputDecoration(
-                                        border: InputBorder.none,
-                                        hintText: "Enter City Name",
-                                        hintStyle:
-                                            TextStyle(color: Colors.grey)),
-                                  ),
-                                )),
-                            Container(
-                              width: double.infinity,
-                              decoration: BoxDecoration(
-                                  color: Colors.black,
-                                  borderRadius: BorderRadius.only(
-                                      bottomLeft: Radius.circular(10.0),
-                                      bottomRight: Radius.circular(10.0))),
-                              child: FlatButton(
-                                onPressed: () async {
-                                  if (search != null) {
+                Padding(
+                  padding: const EdgeInsets.only(top: 20.0, left: 10),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 60,
+                        height: 60,
+                        child: RaisedButton(
+                          onPressed: () {
+                            Navigator.pop(context);
+                          },
+                          color: Colors.white,
+                          shape: CircleBorder(side: BorderSide.none),
+                          child: Icon(
+                            Icons.arrow_back_ios,
+                            color: Colors.black,
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        flex: 4,
+                        child: Container(
+                          decoration: BoxDecoration(
+                              color: Color(0xfff5f8fd),
+                              borderRadius: BorderRadius.circular(30)),
+                          margin: EdgeInsets.symmetric(horizontal: 24),
+                          padding: EdgeInsets.symmetric(horizontal: 24),
+                          child: Row(
+                            children: <Widget>[
+                              SearchField(txt: txt),
+                              InkWell(
+                                onTap: () async {
+                                  if (txt.text != null) {
                                     var weatherDataCity = await weatherModel
-                                        .getCityWeather(search);
+                                        .getCityWeather(txt.text.trim());
                                     if (weatherDataCity != null) {
                                       updateUI(weatherDataCity);
-                                      Navigator.pop(context);
                                     } else {
-                                      Navigator.pop(context);
-                                      Flushbar(
-                                              icon: Icon(
-                                                Icons.info_outline,
-                                                size: 28.0,
-                                                color: Colors.grey,
-                                              ),
-                                              message:
-                                                  "Weather not found for this location, try searching again with another location",
-                                              duration: Duration(seconds: 4),
-                                              margin: EdgeInsets.all(8),
-                                              borderRadius: 8,
-                                              flushbarStyle:
-                                                  FlushbarStyle.FLOATING)
-                                          .show(context);
+                                      return _scaffoldKey.currentState
+                                          .showSnackBar(
+                                        new SnackBar(
+                                          content: new Text(
+                                              "Location does not exist, please check and try again"),
+                                        ),
+                                      );
                                     }
                                   }
                                 },
-                                child: Text(
-                                  "Search",
-                                  textScaleFactor: 1.3,
+                                child: Container(
+                                  child: Icon(
+                                    Icons.search,
+                                    color: Colors.black87,
+                                  ),
                                 ),
                               ),
-                            ),
-                          ]).show(context);
-                    },
-                    child: Icon(
-                      Icons.search,
-                      size: 20.0,
-                      color: Colors.black,
-                    ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
+                ),
+                SizedBox(
+                  height: 20.0,
                 ),
                 Padding(
                   padding: const EdgeInsets.only(top: 15.0),
@@ -318,27 +316,28 @@ class _CityScreenState extends State<CityScreen> {
                     style: TextStyle(
                         fontFamily: 'Quicksand',
                         fontSize: 20.0,
-                        color: Colors.black),
+                        color: themeChange.darkTheme
+                            ? Colors.white
+                            : Colors.black),
                   ),
                 ),
                 SizedBox(
-                  height: 12.0,
+                  height: 20.0,
                 ),
-                Text(
-                  '$formattedDate',
-                  style: TextStyle(
-                      fontFamily: 'Quicksand',
-                      fontSize: 20.0,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black),
-                ),
+                weatherIcon == null
+                    ? Text("N/A")
+                    : IconButton(
+                        icon: Icon(
+                          WeatherIcons.fromString(
+                            weatherIcon,
+                            fallback: WeatherIcons.na,
+                          ),
+                          color: Colors.white,
+                          size: 50,
+                        ),
+                      ),
                 SizedBox(
-                  height: 30.0,
-                ),
-                Image.network(
-                  'http://openweathermap.org/img/wn/$imageId@2x.png',
-                  height: 150,
-                  width: 150,
+                  height: 30,
                 ),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -346,7 +345,8 @@ class _CityScreenState extends State<CityScreen> {
                     Icon(
                       FontAwesomeIcons.temperatureLow,
                       size: 25.0,
-                      color: Colors.black,
+                      color:
+                          themeChange.darkTheme ? Colors.white : Colors.black,
                     ),
                     SizedBox(
                       width: 5.0,
@@ -357,29 +357,23 @@ class _CityScreenState extends State<CityScreen> {
                           fontFamily: 'Quicksand',
                           fontSize: 40.0,
                           fontWeight: FontWeight.bold,
-                          color: Colors.black),
+                          color: themeChange.darkTheme
+                              ? Colors.white
+                              : Colors.black),
                     ),
                     SizedBox(
                       width: 5.0,
                     ),
                     Column(
                       children: <Widget>[
-                        Text(
-                          'HIGH $temperatureHigh °C',
-                          style: TextStyle(
-                              fontFamily: 'Quicksand',
-                              fontSize: 10.0,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black),
-                        ),
-                        Text(
-                          'LOW $temperatureLow °C',
-                          style: TextStyle(
-                              fontFamily: 'Quicksand',
-                              fontSize: 10.0,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black),
-                        ),
+                        HighLowWidget(
+                            hilo: "HIGH",
+                            temp: temperatureHigh,
+                            darkTheme: themeChange.darkTheme),
+                        HighLowWidget(
+                            hilo: "LOW",
+                            temp: temperatureLow,
+                            darkTheme: themeChange.darkTheme),
                       ],
                     )
                   ],
@@ -392,7 +386,8 @@ class _CityScreenState extends State<CityScreen> {
                   style: TextStyle(
                       fontFamily: 'Quicksand',
                       fontSize: 20.0,
-                      color: Colors.black),
+                      color:
+                          themeChange.darkTheme ? Colors.white : Colors.black),
                 ),
                 SizedBox(
                   height: 12.0,
@@ -400,7 +395,7 @@ class _CityScreenState extends State<CityScreen> {
                 Padding(
                   padding: const EdgeInsets.only(left: 100.0, right: 100.0),
                   child: Divider(
-                    color: Colors.black,
+                    color: themeChange.darkTheme ? Colors.white : Colors.black,
                   ),
                 ),
                 Padding(
@@ -408,98 +403,101 @@ class _CityScreenState extends State<CityScreen> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: <Widget>[
-                      Column(
-                        children: <Widget>[
-                          Icon(
-                            FontAwesomeIcons.sun,
-                            size: 30.0,
-                            color: Colors.black,
-                          ),
-                          SizedBox(
-                            height: 5.0,
-                          ),
-                          Text(
-                            'SUNRISE',
-                            style: TextStyle(
-                                fontFamily: 'Quicksand',
-                                fontSize: 10.0,
-                                color: Colors.black),
-                          ),
-                          SizedBox(
-                            height: 5.0,
-                          ),
-                          Text(
-                            '$sunrise',
-                            style: TextStyle(
-                                fontFamily: 'Quicksand',
-                                fontSize: 20.0,
-                                color: Colors.black),
-                          ),
-                        ],
+                      Container(
+                        height: 90,
+                        width: 120,
+                        decoration: cardDec,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: <Widget>[
+                            Padding(
+                              padding: const EdgeInsets.only(left: 8.0),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: <Widget>[
+                                  CardTitle(
+                                    cardText: "SUNSHINE",
+                                  ),
+                                  CardIcon(
+                                    icn: FontAwesomeIcons.sun,
+                                  ),
+                                ],
+                              ),
+                            ),
+                            SizedBox(
+                              height: 5.0,
+                            ),
+                            CardStats(stats: "$sunrise"),
+                          ],
+                        ),
                       ),
                       SizedBox(
                         width: 10.0,
                       ),
-                      Column(
-                        children: <Widget>[
-                          Icon(
-                            FontAwesomeIcons.wind,
-                            size: 30.0,
-                            color: Colors.black,
-                          ),
-                          SizedBox(
-                            height: 5.0,
-                          ),
-                          Text(
-                            'WIND',
-                            style: TextStyle(
-                                fontFamily: 'Quicksand',
-                                fontSize: 10.0,
-                                color: Colors.black),
-                          ),
-                          SizedBox(
-                            height: 5.0,
-                          ),
-                          Text(
-                            '$wind m/s',
-                            style: TextStyle(
-                                fontFamily: 'Quicksand',
-                                fontSize: 20.0,
-                                color: Colors.black),
-                          ),
-                        ],
+                      Container(
+                        height: 90,
+                        width: 120,
+                        decoration: cardDec,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: <Widget>[
+                            Padding(
+                              padding: const EdgeInsets.only(left: 8.0),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: <Widget>[
+                                  CardTitle(
+                                    cardText: "WIND",
+                                  ),
+                                  CardIcon(
+                                    icn: FontAwesomeIcons.wind,
+                                  ),
+                                ],
+                              ),
+                            ),
+                            SizedBox(
+                              height: 5.0,
+                            ),
+                            CardStats(stats: "$wind m/s"),
+                          ],
+                        ),
                       ),
                       SizedBox(
                         width: 10.0,
                       ),
-                      Column(
-                        children: <Widget>[
-                          Icon(
-                            FontAwesomeIcons.water,
-                            size: 30.0,
-                            color: Colors.black,
-                          ),
-                          SizedBox(
-                            height: 5.0,
-                          ),
-                          Text(
-                            'HUMIDITY',
-                            style: TextStyle(
-                                fontFamily: 'Quicksand',
-                                fontSize: 10.0,
-                                color: Colors.black),
-                          ),
-                          SizedBox(
-                            height: 5.0,
-                          ),
-                          Text(
-                            '$humidity%',
-                            style: TextStyle(
-                                fontFamily: 'Quicksand',
-                                fontSize: 20.0,
-                                color: Colors.black),
-                          ),
-                        ],
+                      Container(
+                        height: 90,
+                        width: 120,
+                        decoration: cardDec,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: <Widget>[
+                            Padding(
+                              padding: const EdgeInsets.only(left: 8.0),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: <Widget>[
+                                  CardTitle(
+                                    cardText: "HUMIDITY",
+                                  ),
+                                  CardIcon(
+                                    icn: FontAwesomeIcons.tint,
+                                  ),
+                                ],
+                              ),
+                            ),
+                            SizedBox(
+                              height: 5.0,
+                            ),
+                            CardStats(stats: "$humidity%"),
+                          ],
+                        ),
                       ),
                     ],
                   ),
@@ -507,20 +505,31 @@ class _CityScreenState extends State<CityScreen> {
                 SizedBox(
                   height: 55.0,
                 ),
-                NiceButton(
-                  width: 255,
-                  elevation: 8.0,
-                  radius: 52.0,
-                  text: "3 Hour Forecast for the next 5 days",
-                  fontSize: 10.0,
-                  background: Colors.black,
-                  onPressed: () {
-                    Navigator.push(context,
-                        MaterialPageRoute(builder: (context) {
-                      return ThreeHourCity(cityName: widget.cityName);
-                    }));
-                  },
+                Padding(
+                  padding: const EdgeInsets.only(left: 20.0),
+                  child: Row(
+                    children: [
+                      Text(
+                        '5 days WeatherForecast',
+                        style: TextStyle(
+                          fontSize: 15.0,
+                          fontWeight: FontWeight.bold,
+                          color: themeChange.darkTheme
+                              ? Colors.white
+                              : Colors.black,
+                        ),
+                      ),
+                      SizedBox(),
+                      SizedBox(),
+                    ],
+                  ),
                 ),
+                SizedBox(
+                  height: 20,
+                ),
+                listWeatherForecast == null
+                    ? Text("N/A")
+                    : list(themeChange.darkTheme)
               ],
             ),
           ),
